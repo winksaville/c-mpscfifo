@@ -1,0 +1,22 @@
+# directories
+base_dir = /home/wink/prgs/c/mpscfifo
+include_dir = $base_dir/include
+src_dir = $base_dir/src
+out_dir = $base_dir/out
+
+# tools
+cc = clang-3.6
+cflags = -Weverything -std=c11 -I $include_dir
+#cc = gcc
+#cflags = -pedantic-errors -std=c11 -I $include_dir
+
+rule compile
+  command = $cc $cflags -c $in -o $out
+
+rule link
+  command = $cc $in -o $out
+
+build $out_dir/hello.o: compile $src_dir/hello.c
+build $out_dir/hello: link $out_dir/hello.o
+
+default $out_dir/hello
