@@ -1,11 +1,11 @@
 # directories
-base_dir = /home/wink/prgs/c/mpscfifo
+base_dir = .
 include_dir = $base_dir/include
 src_dir = $base_dir/src
 out_dir = $base_dir/out
 
 # tools
-cc = clang-3.6
+cc = clang
 cflags = -Weverything -std=c11 -I $include_dir
 #cc = gcc
 #cflags = -pedantic-errors -std=c11 -I $include_dir
