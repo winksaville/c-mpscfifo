@@ -22,3 +22,38 @@ typedef struct _MpscFifo_t {
   Msg_t *pHead;
   Msg_t *pTail;
 } MpscFifo_t;
+
+/**
+ * Print the contents of msg
+ */
+void printMsg(Msg_t* pMsg);
+
+/**
+ * Print the contents of fifo
+ */
+void printMpscFifo(MpscFifo_t* pQ);
+
+/**
+ * Initialize an MpscFifo_t. Don't forget to empty the fifo
+ * and delete the stub before freeing MpscFifo_t.
+ */
+extern MpscFifo_t* initMpscFifo(MpscFifo_t* pQ, Msg_t* pStub);
+
+/**
+ * Deinitialize the MpscFifo_t and return the stub which
+ * needs to be disposed of properly. Assumes the fifo is empty.
+ */
+extern Msg_t* deinitMpscFifo(MpscFifo_t *pQ);
+
+/**
+ * Add a Msg_t to the Queue. This maybe used by multiple
+ * entities on the same or different thread. This will never
+ * block as it is a wait free algorithm.
+ */
+void add(MpscFifo_t* pQ, Msg_t* pMsg);
+
+/**
+ * Remove a Msg_t from the Queue. This maybe used only by
+ * a single thread and returns nil if non-blocking.
+ */
+Msg_t* rmv(MpscFifo_t* pQ);

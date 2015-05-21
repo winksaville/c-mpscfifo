@@ -2,14 +2,15 @@
 base_dir = .
 include_dir = $base_dir/include
 src_dir = $base_dir/src
+test_dir = $base_dir/test
 out_dir = $base_dir/out
 
-cflags = -std=c11 -I $include_dir -MMD
+cflags = -std=c11 -I $include_dir -O2 -MMD
 # tools
 cc = clang
 cflags = -Weverything $cflags
 #cc = gcc
-#cflags = -pedantic-errors $clfags
+#cflags = -pedantic-errors $cflags
 
 rule compile
   depfile = $out.d
@@ -18,7 +19,12 @@ rule compile
 rule link
   command = $cc $in -o $out
 
+build $out_dir/mpscfifo.o: compile $src_dir/mpscfifo.c
+
 build $out_dir/hello.o: compile $src_dir/hello.c
 build $out_dir/hello: link $out_dir/hello.o
 
-default $out_dir/hello
+build $out_dir/test.o: compile $test_dir/test.c
+build $out_dir/test: link $out_dir/test.o $out_dir/mpscfifo.o
+
+default $out_dir/hello $out_dir/test
