@@ -19,12 +19,16 @@ rule compile
 rule link
   command = $cc $in -o $out
 
+build $out_dir/mpscfifo_dbg.o: compile $src_dir/mpscfifo_dbg.c
 build $out_dir/mpscfifo.o: compile $src_dir/mpscfifo.c
 
 build $out_dir/hello.o: compile $src_dir/hello.c
 build $out_dir/hello: link $out_dir/hello.o
 
 build $out_dir/test.o: compile $test_dir/test.c
-build $out_dir/test: link $out_dir/test.o $out_dir/mpscfifo.o
+build $out_dir/test: link $
+  $out_dir/test.o $
+  $out_dir/mpscfifo.o $
+  $out_dir/mpscfifo_dbg.o
 
 default $out_dir/hello $out_dir/test

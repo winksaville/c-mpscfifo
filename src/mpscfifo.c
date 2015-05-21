@@ -29,30 +29,6 @@
 /**
  * @see mpscfifo.h
  */
-void printMsg(Msg_t* pMsg) {
-  if (pMsg != NULL) {
-    printf("pMsg=%p pNext=%p pRspq=%p pExtra=%p cmd=%d\n",
-	pMsg, pMsg->pNext, pMsg->pRspq, pMsg->pExtra, pMsg->cmd);
-  } else {
-    printf("pMsg == NULL\n");
-  }
-}
-
-/**
- * @see mpscfifo.h
- */
-void printMpscFifo(MpscFifo_t* pQ) {
-  if (pQ != NULL) {
-    printf("pQ->pHead: "); printMsg(pQ->pHead);
-    printf("pQ->pTail: "); printMsg(pQ->pTail);
-  } else {
-    printf("pQ == NULL");
-  }
-}
-
-/**
- * @see mpscfifo.h
- */
 MpscFifo_t* initMpscFifo(MpscFifo_t* pQ, Msg_t* pStub) {
   pStub->pNext = NULL;
   pQ->pHead = pStub;
