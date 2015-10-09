@@ -1,4 +1,4 @@
-project('Multiple Producer Single Consumer FIFO in C', 'c')
+project('MPSC FIFO', 'c')
 add_global_arguments('-std=c11', language : 'c')
 glib_dep = dependency('glib-2.0')
 
@@ -13,5 +13,5 @@ pkgconfig_gen(
   version : '0.1',
   name : 'libmpscfifo',
   filebase : 'mpscfifo',
-  description : 'A Multiple Producer Single Consumer Fifo')
+  description : 'Multiple Producer Single Consumer FIFO implemented in C')
 
