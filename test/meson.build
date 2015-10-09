@@ -1,7 +1,7 @@
 testexe = executable(
-  'testexe',
+  'testmpscfifo',
   'test.c',
   include_directories : inc,
   link_with : mpscfifolib)
 
-test('lib mpscifio test', testexe)
+test('lib mpscfifo test', testexe)
