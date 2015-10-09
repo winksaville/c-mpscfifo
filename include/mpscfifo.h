@@ -16,6 +16,10 @@
  * you remove it from the queue. Of course the contents are
  * the same but the returned pointer will be different.
  */
+
+#ifndef COM_SAVILLE_MPSCFIFO_H
+#define COM_SAVILLE_MPSCFIFO_H
+
 #include "msg.h"
 
 typedef struct _MpscFifo_t {
@@ -27,23 +31,25 @@ typedef struct _MpscFifo_t {
  * Initialize an MpscFifo_t. Don't forget to empty the fifo
  * and delete the stub before freeing MpscFifo_t.
  */
-extern MpscFifo_t* initMpscFifo(MpscFifo_t* pQ, Msg_t* pStub);
+extern MpscFifo_t *initMpscFifo(MpscFifo_t *pQ, Msg_t *pStub);
 
 /**
  * Deinitialize the MpscFifo_t and return the stub which
  * needs to be disposed of properly. Assumes the fifo is empty.
  */
-extern Msg_t* deinitMpscFifo(MpscFifo_t *pQ);
+extern Msg_t *deinitMpscFifo(MpscFifo_t *pQ);
 
 /**
  * Add a Msg_t to the Queue. This maybe used by multiple
  * entities on the same or different thread. This will never
  * block as it is a wait free algorithm.
  */
-extern void add(MpscFifo_t* pQ, Msg_t* pMsg);
+extern void add(MpscFifo_t *pQ, Msg_t *pMsg);
 
 /**
  * Remove a Msg_t from the Queue. This maybe used only by
  * a single thread and returns nil if non-blocking.
  */
-extern Msg_t* rmv(MpscFifo_t* pQ);
+extern Msg_t *rmv(MpscFifo_t *pQ);
+
+#endif

@@ -8,10 +8,10 @@
 /**
  * @see mpscfifo_dbg.h
  */
-void printMsg(Msg_t* pMsg) {
+void printMsg(Msg_t *pMsg) {
   if (pMsg != NULL) {
-    printf("pMsg=%p pNext=%p pRspq=%p pExtra=%p cmd=%d\n",
-	pMsg, pMsg->pNext, pMsg->pRspq, pMsg->pExtra, pMsg->cmd);
+    printf("pMsg=%p pNext=%p pRspq=%p pExtra=%p cmd=%d\n", (void *)pMsg,
+           (void *)(pMsg->pNext), pMsg->pRspq, pMsg->pExtra, pMsg->cmd);
   } else {
     printf("pMsg == NULL\n");
   }
@@ -20,12 +20,13 @@ void printMsg(Msg_t* pMsg) {
 /**
  * @see mpscfifo_dbg.h
  */
-void printMpscFifo(MpscFifo_t* pQ) {
+void printMpscFifo(MpscFifo_t *pQ) {
   if (pQ != NULL) {
-    printf("pQ->pHead: "); printMsg(pQ->pHead);
-    printf("pQ->pTail: "); printMsg(pQ->pTail);
+    printf("pQ->pHead: ");
+    printMsg(pQ->pHead);
+    printf("pQ->pTail: ");
+    printMsg(pQ->pTail);
   } else {
     printf("pQ == NULL");
   }
 }
-

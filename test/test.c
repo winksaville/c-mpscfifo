@@ -1,17 +1,11 @@
 /**
  * Test mpscfifo, returns 0 if no errors.
  */
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <assert.h>
 
-#include "mpscfifo_misc.h"
 #include "mpscfifo.h"
+#include "mpscfifo_misc.h"
 
-extern void printMpscFifo(MpscFifo_t* pQ);
+#include <stdbool.h>
 
 /**
  * Test we can initialize and deinitialize MpscFifo_t,
@@ -25,13 +19,13 @@ static int test_init_And_deinit_MpscFifo() {
 
   stub.cmd = -1;
 
-  MpscFifo_t* pQ = initMpscFifo(&q, &stub);
+  MpscFifo_t *pQ = initMpscFifo(&q, &stub);
   TEST(pQ != NULL, "expecting q");
   TEST(pQ->pHead == &stub, "pHead not initialized");
   TEST(pQ->pTail == &stub, "pTail not initialized");
   TEST(pQ->pHead->pNext == NULL, "pStub->pNext not initialized");
 
-  Msg_t* pStub = deinitMpscFifo(&q);
+  Msg_t *pStub = deinitMpscFifo(&q);
   TEST(pStub == &stub, "pStub not retuned");
   TEST(pQ->pHead == NULL, "pHead not deinitialized");
   TEST(pQ->pTail == NULL, "pTail not deinitialized");
@@ -49,12 +43,12 @@ static int test_add_rmv() {
   Msg_t stub;
   Msg_t msg;
   MpscFifo_t q;
-  Msg_t* pResult;
+  Msg_t *pResult;
 
   stub.cmd = -1;
 
-  MpscFifo_t* pQ = initMpscFifo(&q, &stub);
-  pResult = rmv(pQ); 
+  MpscFifo_t *pQ = initMpscFifo(&q, &stub);
+  pResult = rmv(pQ);
   TEST(pResult == NULL, "expecting rmv from empty queue to return NULL");
 
   msg.cmd = 1;
@@ -76,7 +70,7 @@ static int test_add_rmv() {
   return error ? 1 : 0;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   UNUSED(argc);
   UNUSED(argv);
 
