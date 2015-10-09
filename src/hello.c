@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "mpscfifo.h"
 
 int main(int argc, char *argv[]) {
   printf("Hello, World! arc=%d\n", argc);
