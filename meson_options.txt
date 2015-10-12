@@ -1,0 +1,4 @@
+option('string_option', type : 'string', value : 'String B', description : 'The description', choices : ['String A', 'String B'])
+option('bool_option', type : 'boolean', value : false, description : 'A boolean')
+option('combo_option', type : 'combo', value : 'two', decription : 'Select the option', choices : ['one', 'two', '3'], )
+
