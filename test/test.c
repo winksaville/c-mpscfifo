@@ -9,6 +9,7 @@
 #include <sys/types.h>
 
 extern int multi_thread(const u_int32_t client_count, const u_int64_t loops);
+extern int multi_thread_msg(const u_int32_t client_count, const u_int64_t loops);
 
 _Atomic(int) ai = 0;
 _Atomic(int) bi = 0;
@@ -111,6 +112,7 @@ int main(int argc, char *argv[]) {
   result |= test_add_rmv();
   result |= simple();
   result |= multi_thread(10, 1000000);
+  result |= multi_thread_msg(1, 1);
 
   if (result == 0) {
     printf("Success\n");
