@@ -6,6 +6,37 @@
 #include "mpscfifo_misc.h"
 
 #include <stdbool.h>
+#include <sys/types.h>
+
+extern int multi_thread(const u_int32_t client_count, const u_int64_t loops);
+
+_Atomic(int) ai = 0;
+_Atomic(int) bi = 0;
+int i = 0;
+int j = 0;
+
+int simple(void) {
+  ai += 1;
+  bi = 3;
+
+  _Atomic(int) tmp;
+  tmp = ai;
+  ai = bi;
+  bi = tmp;
+  printf("ai=%d bi=%d tmp=%d\n", ai, bi, tmp);
+
+  __atomic_store_n(&i, -1, __ATOMIC_RELEASE);
+  __atomic_store_n(&j, -2, __ATOMIC_SEQ_CST); //RELEASE); //__ATOMIC_SEQ_CST);
+
+  __atomic_fetch_add(&i, 2, __ATOMIC_SEQ_CST);
+  __atomic_fetch_add(&j, 1, __ATOMIC_SEQ_CST);
+
+  //printf("before exchange j=%d i=%d\n", j, i);
+  __atomic_exchange(&i, &j, &j, __ATOMIC_SEQ_CST);
+  printf("after  exchange j=%d i=%d\n", j, i);
+
+  return 0;
+}
 
 /**
  * Test we can initialize and deinitialize MpscFifo_t,
@@ -78,6 +109,8 @@ int main(int argc, char *argv[]) {
 
   result |= test_init_And_deinit_MpscFifo();
   result |= test_add_rmv();
+  result |= simple();
+  result |= multi_thread(10, 1000000);
 
   if (result == 0) {
     printf("Success\n");
