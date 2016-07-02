@@ -6,8 +6,8 @@
 #include <stdatomic.h>
 #include <pthread.h>
 
-//typedef _Atomic(u_int64_t) Counter;
-typedef u_int64_t Counter;
+typedef _Atomic(u_int64_t) Counter;
+//typedef u_int64_t Counter;
 
 typedef struct ClientParams {
   pthread_t thread;
