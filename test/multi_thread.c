@@ -60,7 +60,7 @@ done:
         i, (void*)&clients[i], clients[i].loops, clients[i].initial, clients[i].final);
   }
   u_int64_t expected_value = loops * clients_created;
-  printf("multi_thread: %u clients gU64=%lu %s expected_value=%lu\n",
+  printf("multi_thread: %u clients gU64=%lu %s expected_value=%lu\n\n",
       clients_created, gU64, gU64 == expected_value ? "==" : "!=", expected_value);
 
   return gU64 == expected_value ? 0 : 1;
