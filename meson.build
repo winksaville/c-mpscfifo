@@ -8,7 +8,9 @@ subdir('include')
 subdir('src')
 subdir('test')
 
-pkgconfig_gen(
+pkgg = import('pkgconfig')
+
+pkgg.generate(
   libraries : mpscfifolib,
   version : '0.1',
   name : 'libmpscfifo',
