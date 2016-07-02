@@ -6,6 +6,7 @@
 #include "mpscfifo_misc.h"
 
 #include <stdbool.h>
+#include <stdlib.h>
 #include <sys/types.h>
 
 extern int multi_thread(const u_int32_t client_count, const u_int64_t loops);
@@ -103,16 +104,23 @@ static int test_add_rmv() {
 }
 
 int main(int argc, char *argv[]) {
-  UNUSED(argc);
-  UNUSED(argv);
+  if (argc != 3) {
+    printf("Usage:\n");
+    printf(" %s client_count loops\n", argv[0]);
+    return 1;
+  }
 
+  u_int32_t client_count = strtoul(argv[1], NULL, 10);
+  u_int64_t loops = strtoull(argv[1], NULL, 10);
   int result = 0;
+
+  printf("test client_count=%d loops=%ld\n", client_count, loops);
 
   result |= test_init_And_deinit_MpscFifo();
   result |= test_add_rmv();
   result |= simple();
-  result |= multi_thread(10, 1000000);
-  result |= multi_thread_msg(1, 1);
+  result |= multi_thread(client_count, loops);
+  result |= multi_thread_msg(client_count, loops);
 
   if (result == 0) {
     printf("Success\n");
