@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
   }
 
   u_int32_t client_count = strtoul(argv[1], NULL, 10);
-  u_int64_t loops = strtoull(argv[1], NULL, 10);
+  u_int64_t loops = strtoull(argv[2], NULL, 10);
   int result = 0;
 
   printf("test client_count=%d loops=%ld\n", client_count, loops);
