@@ -16,6 +16,9 @@
  * you remove it from the queue. Of course the contents are
  * the same but the returned pointer will be different.
  */
+#include <sys/types.h>
+#include <pthread.h>
+
 #include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -33,6 +36,7 @@ MpscFifo_t *initMpscFifo(MpscFifo_t *pQ, Msg_t *pStub) {
   pStub->pNext = NULL;
   pQ->pHead = pStub;
   pQ->pTail = pStub;
+  pQ->count = 0;
   return pQ;
 }
 
@@ -55,15 +59,18 @@ Msg_t *deinitMpscFifo(MpscFifo_t *pQ) {
  * @see mpscifo.h
  */
 void add(MpscFifo_t *pQ, Msg_t *pMsg) {
-  assert(pQ != NULL);
+//  assert(pQ != NULL);
   if (pMsg != NULL) {
     // Be sure pMsg->pNext == NULL
     pMsg->pNext = NULL;
 
     // Using Builtin Clang doesn't seem to support stdatomic.h
-    Msg_t *pPrevHead = __atomic_exchange_n(&pQ->pHead, pMsg, __ATOMIC_ACQ_REL);
-    __atomic_store_n(&pPrevHead->pNext, pMsg, __ATOMIC_RELEASE);
-
+    Msg_t** ptr_pHead = &pQ->pHead;
+    Msg_t *pPrevHead = __atomic_exchange_n(ptr_pHead, pMsg, __ATOMIC_SEQ_CST); //ACQ_REL);
+    Msg_t** ptr_pNext = &pPrevHead->pNext;
+    __atomic_store_n(ptr_pNext, pMsg, __ATOMIC_SEQ_CST); //RELEASE);
+    int32_t* ptr_count = &pQ->count;
+    __atomic_fetch_add(ptr_count, 1, __ATOMIC_SEQ_CST);
     // TODO: Support "blocking" which means use condition variable
   }
 }
@@ -72,11 +79,14 @@ void add(MpscFifo_t *pQ, Msg_t *pMsg) {
  * @see mpscifo.h
  */
 Msg_t *rmv(MpscFifo_t *pQ) {
-  assert(pQ != NULL);
+//  assert(pQ != NULL);
   Msg_t *pResult = pQ->pTail;
-  Msg_t *pNext = __atomic_load_n(&pResult->pNext, __ATOMIC_ACQUIRE);
+  Msg_t** ptr_next = &pResult->pNext;
+  Msg_t *pNext = __atomic_load_n(ptr_next, __ATOMIC_SEQ_CST); //ACQUIRE);
   if (pNext != NULL) {
     // TODO: Support "blocking" which means use condition variable
+    int32_t* ptr_count = &pQ->count;
+    __atomic_fetch_sub(ptr_count, 1, __ATOMIC_SEQ_CST);
     pQ->pTail = pNext;
     pResult->pNext = NULL;
     pResult->pRspq = pNext->pRspq;
@@ -87,4 +97,65 @@ Msg_t *rmv(MpscFifo_t *pQ) {
     pResult = NULL;
   }
   return pResult;
+}
+
+#if 0
+/**
+ * @see mpscifo.h
+ */
+Msg_t *rmv_raw(MpscFifo_t *pQ) {
+  Msg_t *pResult = pQ->pTail;
+  Msg_t *pNext = __atomic_load_n(&pResult->pNext, __ATOMIC_SEQ_CST); //ACQUIRE);
+  if (pNext != NULL) {
+    __atomic_fetch_sub(&pQ->count, 1, __ATOMIC_SEQ_CST);
+    __atomic_store_n(&pQ->pTail, pNext, __ATOMIC_SEQ_CST); //RELEASE
+  } else {
+    pResult = NULL;
+  }
+  return pResult;
+}
+#else
+/**
+ * @see mpscifo.h
+ */
+Msg_t *rmv_raw(MpscFifo_t *pQ) {
+//  assert(pQ != NULL);
+  int32_t* ptr_count = &pQ->count;
+  int32_t initial_count = __atomic_load_n(ptr_count, __ATOMIC_SEQ_CST);
+  Msg_t *pNext_retry;
+  Msg_t *pResult = pQ->pTail;
+  Msg_t** ptr_next = &pResult->pNext;
+  Msg_t *pNext = __atomic_load_n(ptr_next, __ATOMIC_SEQ_CST); //ACQUIRE);
+  if (pNext != NULL) {
+#if 1
+    Msg_t** ptr_tail = &pQ->pTail;
+    __atomic_store_n(ptr_tail, pNext, __ATOMIC_SEQ_CST); //RELEASE
+#elif 0
+    __atomic_store_n(&pQ->pTail, pNext, __ATOMIC_SEQ_CST); //RELEASE
+#else
+    pQ->pTail = pNext;
+#endif
+    int32_t* ptr_count = &pQ->count;
+    __atomic_fetch_sub(ptr_count, 1, __ATOMIC_SEQ_CST);
+  } else {
+    pNext_retry = __atomic_load_n(ptr_next, __ATOMIC_SEQ_CST);
+    printf("rmv_raw 1 initial_count=%d pNext=%p pNext_retry=%p pQ->count=%d\n",
+        initial_count, pNext, pNext_retry, pQ->count);
+    sched_yield();
+    pNext_retry = __atomic_load_n(ptr_next, __ATOMIC_SEQ_CST);
+    printf("rmv_raw 2 initial_count=%d pNext=%p pNext_retry=%p pQ->count=%d\n",
+        initial_count, pNext, pNext_retry, pQ->count);
+    //*((u_int8_t*)0) = 0; // Crash
+    pResult = NULL;
+  }
+  return pResult;
+}
+#endif
+
+/**
+ * @see mpscifo.h
+ */
+void ret(Msg_t *pMsg) {
+  //assert(pMsg->pOwner != NULL);
+  add(pMsg->pOwner, pMsg);
 }

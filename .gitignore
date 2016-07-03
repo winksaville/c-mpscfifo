@@ -1,6 +1,7 @@
 out/
 doc/
 build/
+buildclang/
 .ninja_deps
 .ninja_log
 *.o

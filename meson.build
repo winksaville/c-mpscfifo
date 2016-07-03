@@ -1,5 +1,5 @@
 project('MPSC FIFO', 'c')
-add_global_arguments('-std=c11', '-pthread', language : 'c')
+add_global_arguments('-std=c11', '-O2', '-g', '-pthread', language : 'c')
 glib_dep = dependency('glib-2.0')
 
 inc = include_directories('include')

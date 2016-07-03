@@ -7,12 +7,17 @@
 
 #include <stdint.h>
 
+typedef struct _MpscFifo_t MpscFifo_t;
+
 typedef struct _msg_t {
-  struct _msg_t *pNext; // Next message
-  void *pRspq;          // Response queue, null if none
-  void *pExtra;         // Extra information, null if none
-  int32_t cmd;          // Command to perform
-  int32_t arg;          // argument
+  struct _msg_t *pNext;      // Next message
+  MpscFifo_t * const pOwner; // The fifo pool this message is owned by
+                             // Initialize once with:
+                             //   *((MpscFifo_t**)&pMsg-pOwner) = &fifo;
+  void *pRspq;               // Response queue, null if none
+  void *pExtra;              // Extra information, null if none
+  int32_t cmd;               // Command to perform
+  int32_t arg;               // argument
 } Msg_t;
 
 #endif

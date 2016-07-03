@@ -21,10 +21,12 @@
 #define COM_SAVILLE_MPSCFIFO_H
 
 #include "msg.h"
+#include <sys/types.h>
 
 typedef struct _MpscFifo_t {
   Msg_t *pHead;
   Msg_t *pTail;
+  int32_t count;
 } MpscFifo_t;
 
 /**
@@ -51,5 +53,18 @@ extern void add(MpscFifo_t *pQ, Msg_t *pMsg);
  * a single thread and returns nil if non-blocking.
  */
 extern Msg_t *rmv(MpscFifo_t *pQ);
+
+/**
+ * Remove a Msg_t from the Queue, DOES NOT PRESERVE CONTENTS!
+ * Only used by a single thread and returns nil if non-blocking.
+ */
+extern Msg_t *rmv_raw(MpscFifo_t *pQ);
+
+/**
+ * Return the message to its queue. This maybe3 used by multiple
+ * entities on the same or different thread. This will never
+ * block as it is a wait free algorithm.
+ */
+extern void ret(Msg_t *pMsg);
 
 #endif

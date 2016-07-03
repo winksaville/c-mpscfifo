@@ -10,7 +10,7 @@
 #include <sys/types.h>
 
 extern int multi_thread(const u_int32_t client_count, const u_int64_t loops);
-extern int multi_thread_msg(const u_int32_t client_count, const u_int64_t loops);
+extern int multi_thread_msg(const u_int32_t client_count, const u_int64_t loops, const u_int32_t msg_count);
 
 _Atomic(int) ai = 0;
 _Atomic(int) bi = 0;
@@ -104,14 +104,15 @@ static int test_add_rmv() {
 }
 
 int main(int argc, char *argv[]) {
-  if (argc != 3) {
+  if (argc != 4) {
     printf("Usage:\n");
-    printf(" %s client_count loops\n", argv[0]);
+    printf(" %s client_count loops msg_count\n", argv[0]);
     return 1;
   }
 
   u_int32_t client_count = strtoul(argv[1], NULL, 10);
   u_int64_t loops = strtoull(argv[2], NULL, 10);
+  u_int32_t msg_count = strtoul(argv[3], NULL, 10);
   int result = 0;
 
   printf("test client_count=%d loops=%ld\n", client_count, loops);
@@ -120,7 +121,7 @@ int main(int argc, char *argv[]) {
   result |= test_add_rmv();
   result |= simple();
   result |= multi_thread(client_count, loops);
-  result |= multi_thread_msg(client_count, loops);
+  result |= multi_thread_msg(client_count, loops, msg_count);
 
   if (result == 0) {
     printf("Success\n");
