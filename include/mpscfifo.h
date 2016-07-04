@@ -24,9 +24,9 @@
 #include <stdint.h>
 
 typedef struct _MpscFifo_t {
-  Msg_t *pHead __attribute__(( aligned (64) ));
-  Msg_t *pTail __attribute__(( aligned (64) ));
-  int32_t count;
+  _Atomic(Msg_t*) pHead __attribute__(( aligned (64) ));
+  _Atomic(Msg_t*) pTail __attribute__(( aligned (64) ));
+  _Atomic(int32_t) count;
 } MpscFifo_t;
 
 /**

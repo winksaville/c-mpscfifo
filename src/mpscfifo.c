@@ -59,7 +59,7 @@ Msg_t *deinitMpscFifo(MpscFifo_t *pQ) {
  * @see mpscifo.h
  */
 void add(MpscFifo_t *pQ, Msg_t *pMsg) {
-//  assert(pQ != NULL);
+#if 0
   if (pMsg != NULL) {
     // Be sure pMsg->pNext == NULL
     pMsg->pNext = NULL;
@@ -73,13 +73,22 @@ void add(MpscFifo_t *pQ, Msg_t *pMsg) {
     __atomic_fetch_add(ptr_count, 1, __ATOMIC_SEQ_CST);
     // TODO: Support "blocking" which means use condition variable
   }
+#else
+  if (pMsg != NULL) {
+    pMsg->pNext = NULL;
+    void** ptr_pHead = (void*)&pQ->pHead;
+    Msg_t* pPrevHead = __atomic_exchange_n(ptr_pHead, pMsg, __ATOMIC_SEQ_CST); //ACQ_REL);
+    pPrevHead->pNext = pMsg;
+    pQ->count += 1;
+  }
+#endif
 }
 
 /**
  * @see mpscifo.h
  */
 Msg_t *rmv(MpscFifo_t *pQ) {
-//  assert(pQ != NULL);
+#if 0
   Msg_t *pResult = pQ->pTail;
   Msg_t** ptr_next = &pResult->pNext;
   Msg_t *pNext = __atomic_load_n(ptr_next, __ATOMIC_SEQ_CST); //ACQUIRE);
@@ -97,6 +106,22 @@ Msg_t *rmv(MpscFifo_t *pQ) {
     pResult = NULL;
   }
   return pResult;
+#else
+  Msg_t* pResult = pQ->pTail;
+  Msg_t* pNext = pResult->pNext;
+  if (pNext != NULL) {
+    pQ->pTail = pNext;
+    pQ->count -= 1;
+
+    pResult->pRspq = pNext->pRspq;
+    pResult->pExtra = pNext->pExtra;
+    pResult->cmd = pNext->cmd;
+    pResult->arg = pNext->arg;
+  } else {
+    pResult = NULL;
+  }
+  return pResult;
+#endif
 }
 
 #if 0
@@ -119,6 +144,7 @@ Msg_t *rmv_raw(MpscFifo_t *pQ) {
  * @see mpscifo.h
  */
 Msg_t *rmv_raw(MpscFifo_t *pQ) {
+#if 0
 //  assert(pQ != NULL);
   int32_t* ptr_count = &pQ->count;
   int32_t initial_count = __atomic_load_n(ptr_count, __ATOMIC_SEQ_CST);
@@ -170,6 +196,19 @@ Msg_t *rmv_raw(MpscFifo_t *pQ) {
 #endif
   }
   return pResult;
+#else
+  //_Atomic(Msg_t*) pResult = pQ->pTail;
+  //_Atomic(Msg_t*) pNext = pResult->pNext;
+  Msg_t* pResult = pQ->pTail;
+  Msg_t* pNext = pResult->pNext;
+  if (pNext != NULL) {
+    pQ->pTail = pNext;
+    pQ->count -= 1;
+  } else {
+    pResult = NULL;
+  }
+  return pResult;
+#endif
 }
 #endif
 

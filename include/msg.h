@@ -10,7 +10,7 @@
 typedef struct _MpscFifo_t MpscFifo_t;
 
 typedef struct _msg_t {
-  struct _msg_t *pNext __attribute__ (( aligned (64) )); // Next message
+  _Atomic(struct _msg_t*) pNext  __attribute__ (( aligned (64) )); // Next message
   MpscFifo_t * const pOwner; // The fifo pool this message is owned by
                              // Initialize once with:
                              //   *((MpscFifo_t**)&pMsg-pOwner) = &fifo;

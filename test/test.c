@@ -119,8 +119,8 @@ int main(int argc, char *argv[]) {
 
   result |= test_init_And_deinit_MpscFifo();
   result |= test_add_rmv();
-  result |= simple();
-  result |= multi_thread(client_count, loops);
+  //result |= simple();
+  //result |= multi_thread(client_count, loops);
   result |= multi_thread_msg(client_count, loops, msg_count);
 
   if (result == 0) {
