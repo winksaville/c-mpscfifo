@@ -85,11 +85,15 @@ int multi_thread_msg(const uint32_t client_count, const uint64_t loops,
   uint64_t no_msgs_count = 0;
   uint64_t not_ready_client_count = 0;
 
+
   printf("multi_thread_msg:+client_count=%d loops=%ld msg_count=%d\n",
       client_count, loops, msg_count);
 
+  printf("multi_thread_msg: &fifo=%p, &pHead=%p, &pTail=%p sizeof(fifo)=%ld(0x%lx)\n",
+      &fifo, &fifo.pHead, &fifo.pTail, sizeof(fifo), sizeof(fifo));
   Msg_t* msgs = malloc(sizeof(Msg_t) * (msg_count + 1));
-  printf("multi_thread_msg: msgs=%p\n", msgs);
+  printf("multi_thread_msg: &msgs[0]=%p &msgs[1]=%p sizeof(Msg_t)=%ld(0x%lx)\n",
+      &msgs[0], &msgs[1], sizeof(Msg_t), sizeof(Msg_t));
   if (msgs == NULL) {
     printf("multi_thread_msg: Unable to allocate messages, aborting\n");
     error = 1;
