@@ -5,7 +5,7 @@
 #include <mpscfifo.h>
 #include <msg.h>
 
-#include <sys/types.h>
+#include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,16 +14,16 @@
 
 #include <semaphore.h>
 
-typedef _Atomic(u_int64_t) Counter;
-//static typedef u_int64_t Counter;
+typedef _Atomic(uint64_t) Counter;
+//static typedef uint64_t Counter;
 
 typedef struct ClientParams {
   pthread_t thread;
 
   bool done;
   Msg_t* msg;
-  u_int64_t error_count;
-  u_int64_t count;
+  uint64_t error_count;
+  uint64_t count;
   sem_t sem_ready;
   sem_t sem_waiting;
   sem_t sem_work_complete;
@@ -75,20 +75,21 @@ static void* client(void* p) {
   return NULL;
 }
 
-int multi_thread_msg(const u_int32_t client_count, const u_int64_t loops,
-    const u_int32_t msg_count) {
+int multi_thread_msg(const uint32_t client_count, const uint64_t loops,
+    const uint32_t msg_count) {
   bool error;
   ClientParams clients[client_count];
   MpscFifo_t fifo;
-  u_int32_t clients_created = 0;
-  u_int64_t msgs_count = 0;
-  u_int64_t no_msgs_count = 0;
-  u_int64_t not_ready_client_count = 0;
+  uint32_t clients_created = 0;
+  uint64_t msgs_count = 0;
+  uint64_t no_msgs_count = 0;
+  uint64_t not_ready_client_count = 0;
 
   printf("multi_thread_msg:+client_count=%d loops=%ld msg_count=%d\n",
       client_count, loops, msg_count);
 
   Msg_t* msgs = malloc(sizeof(Msg_t) * (msg_count + 1));
+  printf("multi_thread_msg: msgs=%p\n", msgs);
   if (msgs == NULL) {
     printf("multi_thread_msg: Unable to allocate messages, aborting\n");
     error = 1;
@@ -98,7 +99,7 @@ int multi_thread_msg(const u_int32_t client_count, const u_int64_t loops,
   // Add the remaining msgs to the fifo
   *((MpscFifo_t**)&msgs[0].pOwner) = &fifo;
   initMpscFifo(&fifo, &msgs[0]);
-  for (u_int32_t i = 1; i <= msg_count; i++) {
+  for (uint32_t i = 1; i <= msg_count; i++) {
     DPF("multi_thread_msg: add %d msg=%p\n", i, &msgs[i]);
     // Cast away the constantness to initialize
     *((MpscFifo_t**)&msgs[i].pOwner) = &fifo;
@@ -106,7 +107,7 @@ int multi_thread_msg(const u_int32_t client_count, const u_int64_t loops,
   }
   printf("multi_thread_msg: after creating pool fifo.count=%d\n", fifo.count);
 
-  for (u_int32_t i = 0; i < client_count; i++, clients_created++) {
+  for (uint32_t i = 0; i < client_count; i++, clients_created++) {
     ClientParams* param = &clients[i];
     param->done = false;
     param->msg = NULL;
@@ -128,8 +129,8 @@ int multi_thread_msg(const u_int32_t client_count, const u_int64_t loops,
   }
 
   printf("multi_thread_msg: created %u clients\n", clients_created);
-  for (u_int32_t i = 0; i < loops; i++) {
-    for (u_int32_t c = 0; c < clients_created; c++) {
+  for (uint32_t i = 0; i < loops; i++) {
+    for (uint32_t c = 0; c < clients_created; c++) {
       ClientParams* client = &clients[c];
       Msg_t** ptr_msg = &client->msg;
       Msg_t* msg = __atomic_load_n(ptr_msg, __ATOMIC_SEQ_CST); //ACQUIRE);
@@ -142,7 +143,7 @@ int multi_thread_msg(const u_int32_t client_count, const u_int64_t loops,
           sem_post(&client->sem_waiting);
         } else {
           no_msgs_count += 1;
-          //*((u_int8_t*)0) = 0; // Crash
+          //*((uint8_t*)0) = 0; // Crash
           sched_yield();
         }
       } else {
@@ -157,7 +158,7 @@ int multi_thread_msg(const u_int32_t client_count, const u_int64_t loops,
 
 done:
   printf("multi_thread_msg: done, joining %u clients\n", clients_created);
-  for (u_int32_t i = 0; i < clients_created; i++) {
+  for (uint32_t i = 0; i < clients_created; i++) {
     ClientParams* param = &clients[i];
 
     // Signal the client to stop
@@ -182,7 +183,7 @@ done:
   // Remove all msgs
   printf("multi_thread_msg: fifo.count=%d\n", fifo.count);
   Msg_t* msg;
-  u_int32_t rmv_count = 0;
+  uint32_t rmv_count = 0;
   while ((msg = rmv(&fifo)) != NULL) {
     rmv_count += 1;
     DPF("multi_thread_msg: remove msg=%p\n", msg);
@@ -196,8 +197,8 @@ done:
     free(msgs);
   }
 
-  u_int64_t expected_value = loops * clients_created;
-  u_int64_t sum = msgs_count + no_msgs_count + not_ready_client_count;
+  uint64_t expected_value = loops * clients_created;
+  uint64_t sum = msgs_count + no_msgs_count + not_ready_client_count;
   printf("multi_thread_msg: sum=%ld expected_value=%ld\n", sum, expected_value);
   printf("multi_thread_msg: msgs_count=%ld no_msgs_count=%ld not_ready_client_count=%ld\n",
       msgs_count, no_msgs_count, not_ready_client_count);

@@ -145,7 +145,7 @@ Msg_t *rmv_raw(MpscFifo_t *pQ) {
     pNext_retry = __atomic_load_n(ptr_next, __ATOMIC_SEQ_CST);
     printf("rmv_raw 2 initial_count=%d pNext=%p pNext_retry=%p pQ->count=%d\n",
         initial_count, pNext, pNext_retry, pQ->count);
-    //*((u_int8_t*)0) = 0; // Crash
+    //*((uint8_t*)0) = 0; // Crash
     pResult = NULL;
   }
   return pResult;

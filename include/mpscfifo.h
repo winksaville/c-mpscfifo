@@ -21,7 +21,7 @@
 #define COM_SAVILLE_MPSCFIFO_H
 
 #include "msg.h"
-#include <sys/types.h>
+#include <stdint.h>
 
 typedef struct _MpscFifo_t {
   Msg_t *pHead;
