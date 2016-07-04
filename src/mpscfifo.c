@@ -122,7 +122,6 @@ Msg_t *rmv_raw(MpscFifo_t *pQ) {
 //  assert(pQ != NULL);
   int32_t* ptr_count = &pQ->count;
   int32_t initial_count = __atomic_load_n(ptr_count, __ATOMIC_SEQ_CST);
-  Msg_t *pNext_retry;
   Msg_t *pResult = pQ->pTail;
   Msg_t** ptr_next = &pResult->pNext;
   Msg_t *pNext = __atomic_load_n(ptr_next, __ATOMIC_SEQ_CST); //ACQUIRE);
@@ -138,7 +137,28 @@ Msg_t *rmv_raw(MpscFifo_t *pQ) {
     int32_t* ptr_count = &pQ->count;
     __atomic_fetch_sub(ptr_count, 1, __ATOMIC_SEQ_CST);
   } else {
-    pNext_retry = __atomic_load_n(ptr_next, __ATOMIC_SEQ_CST);
+#if 1
+    uint32_t yield_count = 0;
+    uint32_t cur_count = initial_count;
+    while ((pNext == NULL) && (cur_count > 0)) {
+      yield_count += 1;
+      sched_yield();
+      pNext = __atomic_load_n(ptr_next, __ATOMIC_SEQ_CST); //ACQUIRE);
+      cur_count =  __atomic_load_n(ptr_count, __ATOMIC_SEQ_CST);
+    }
+    if (pNext != NULL) {
+      Msg_t** ptr_tail = &pQ->pTail;
+      __atomic_store_n(ptr_tail, pNext, __ATOMIC_SEQ_CST); //RELEASE
+      __atomic_fetch_sub(ptr_count, 1, __ATOMIC_SEQ_CST);
+      printf("rmv_raw fixed initial_count=%d pNext=%p pQ->count=%d yield_count=%d\n",
+          initial_count, pNext, pQ->count, yield_count);
+    } else {
+      pResult = NULL;
+      printf("rmv_raw failed initial_count=%d pNext=%p pQ->count=%d yield_count=%d\n",
+          initial_count, pNext, pQ->count, yield_count);
+    }
+#else
+    Msg_t *pNext_retry = __atomic_load_n(ptr_next, __ATOMIC_SEQ_CST);
     printf("rmv_raw 1 initial_count=%d pNext=%p pNext_retry=%p pQ->count=%d\n",
         initial_count, pNext, pNext_retry, pQ->count);
     sched_yield();
@@ -147,6 +167,7 @@ Msg_t *rmv_raw(MpscFifo_t *pQ) {
         initial_count, pNext, pNext_retry, pQ->count);
     //*((uint8_t*)0) = 0; // Crash
     pResult = NULL;
+#endif
   }
   return pResult;
 }
